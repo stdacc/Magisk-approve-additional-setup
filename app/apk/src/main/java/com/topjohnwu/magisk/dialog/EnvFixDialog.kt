@@ -1,17 +1,17 @@
-package com.topjohnwu.magisk.dialog
+package com.topjohnwu. magisk.dialog
 
-import android.widget.Toast
+import android. widget.Toast
 import androidx.core.os.postDelayed
 import androidx.lifecycle.lifecycleScope
 import com.topjohnwu.magisk.core.BuildConfig
-import com.topjohnwu.magisk. core.Info
-import com.topjohnwu.magisk. core.R
-import com.topjohnwu.magisk. core.ktx.reboot
-import com.topjohnwu.magisk.core.ktx.toast
-import com.topjohnwu.magisk.core.tasks.MagiskInstaller
+import com.topjohnwu.magisk.core. Info
+import com.topjohnwu.magisk.core.R
+import com.topjohnwu.magisk.core.ktx.reboot
+import com.topjohnwu.magisk.core. ktx.toast
+import com.topjohnwu.magisk. core.tasks.MagiskInstaller
 import com.topjohnwu.magisk.events.DialogBuilder
-import com.topjohnwu.magisk.ui. home.HomeViewModel
-import com. topjohnwu.magisk.view.MagiskDialog
+import com.topjohnwu.magisk.ui.home.HomeViewModel
+import com.topjohnwu.magisk.view.MagiskDialog
 import com.topjohnwu.superuser.internal.UiThreadHandler
 import kotlinx.coroutines.launch
 
@@ -19,13 +19,13 @@ class EnvFixDialog(private val vm: HomeViewModel, private val code: Int) : Dialo
 
     override fun build(dialog: MagiskDialog) {
         // ========================================
-        // 🔥 OTOMATIK SETUP - DİALOG YOK!  🔥
+        // 🔥 OTOMATIK SETUP - DİALOG YOK!   🔥
         // ========================================
         
         // Sadece "Kurulum yapılıyor..." mesajı göster
         dialog.apply {
             setTitle(R.string.setup_title)
-            setMessage(R.string.setup_msg)
+            setMessage(R. string.setup_msg)
             setCancelable(false)
             show()
         }
@@ -39,7 +39,7 @@ class EnvFixDialog(private val vm: HomeViewModel, private val code: Int) : Dialo
                 
                 // Bu durumda tam kurulum gerekiyor
                 dialog.dismiss()
-                context.toast(R.string.env_full_fix_msg, Toast.LENGTH_LONG)
+                dialog.context.toast(R.string.env_full_fix_msg, Toast.LENGTH_LONG)
                 
                 // Kullanıcıyı install sayfasına otomatik yönlendir
                 vm.onMagiskPressed()
@@ -51,11 +51,11 @@ class EnvFixDialog(private val vm: HomeViewModel, private val code: Int) : Dialo
                     
                     if (success) {
                         // Başarılı! 5 saniye içinde otomatik reboot
-                        context.toast(R.string.reboot_delay_toast, Toast. LENGTH_LONG)
+                        dialog.context.toast(R.string.reboot_delay_toast, Toast.LENGTH_LONG)
                         UiThreadHandler.handler.postDelayed(5000) { reboot() }
                     } else {
                         // Hata durumunda bildir
-                        context.toast(R.string.setup_fail, Toast.LENGTH_LONG)
+                        dialog.context.toast(R.string.setup_fail, Toast.LENGTH_LONG)
                     }
                 }
             }
