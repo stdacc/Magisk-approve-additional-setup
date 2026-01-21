@@ -1,14 +1,14 @@
-package com.topjohnwu. magisk.dialog
+package com.topjohnwu.magisk.dialog
 
-import android. widget.Toast
+import android.widget.Toast
 import androidx.core.os.postDelayed
 import androidx.lifecycle.lifecycleScope
 import com.topjohnwu.magisk.core.BuildConfig
-import com.topjohnwu.magisk.core. Info
+import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.R
 import com.topjohnwu.magisk.core.ktx.reboot
-import com.topjohnwu.magisk.core. ktx.toast
-import com.topjohnwu.magisk. core.tasks.MagiskInstaller
+import com.topjohnwu.magisk.core.ktx.toast
+import com.topjohnwu.magisk.core.tasks.MagiskInstaller
 import com.topjohnwu.magisk.events.DialogBuilder
 import com.topjohnwu.magisk.ui.home.HomeViewModel
 import com.topjohnwu.magisk.view.MagiskDialog
@@ -18,47 +18,53 @@ import kotlinx.coroutines.launch
 class EnvFixDialog(private val vm: HomeViewModel, private val code: Int) : DialogBuilder {
 
     override fun build(dialog: MagiskDialog) {
-        // ========================================
-        // 🔥 OTOMATIK SETUP - DİALOG YOK!   🔥
-        // ========================================
-        
-        // Sadece "Kurulum yapılıyor..." mesajı göster
         dialog.apply {
-            setTitle(R.string.setup_title)
-            setMessage(R. string.setup_msg)
-            setCancelable(false)
-            show()
-        }
-        
-        // Hemen setup işlemini başlat (kullanıcı onayı bekleme!)
-        dialog.activity.lifecycleScope.launch {
-            // Eğer ciddi bir sorun varsa (code == 2 veya versiyon uyuşmazlığı)
-            if (code == 2 || 
-                Info.env. versionCode != BuildConfig.APP_VERSION_CODE ||
-                Info.env.versionString != BuildConfig.APP_VERSION_NAME) {
-                
-                // Bu durumda tam kurulum gerekiyor
-                dialog.dismiss()
-                dialog.context.toast(R.string.env_full_fix_msg, Toast.LENGTH_LONG)
-                
-                // Kullanıcıyı install sayfasına otomatik yönlendir
-                vm.onMagiskPressed()
-                
-            } else {
-                // Normal environment fix işlemi - OTOMATIK! 
-                MagiskInstaller. FixEnv().exec { success ->
-                    dialog.dismiss()
-                    
-                    if (success) {
-                        // Başarılı! 5 saniye içinde otomatik reboot
-                        dialog.context.toast(R.string.reboot_delay_toast, Toast.LENGTH_LONG)
-                        UiThreadHandler.handler.postDelayed(5000) { reboot() }
-                    } else {
-                        // Hata durumunda bildir
-                        dialog.context.toast(R.string.setup_fail, Toast.LENGTH_LONG)
+            setTitle(R.string.env_fix_title)
+            setMessage(R.string.env_fix_msg)
+            setButton(MagiskDialog.ButtonType.POSITIVE) {
+                text = android.R.string.ok
+                doNotDismiss = true
+                onClick {
+                    dialog.apply {
+                        setTitle(R.string.setup_title)
+                        setMessage(R.string.setup_msg)
+                        resetButtons()
+                        setCancelable(false)
+                    }
+                    dialog.activity.lifecycleScope.launch {
+                        MagiskInstaller.FixEnv().exec { success ->
+                            dialog.dismiss()
+                            context.toast(
+                                if (success) R.string.reboot_delay_toast else R.string.setup_fail,
+                                Toast.LENGTH_LONG
+                            )
+                            if (success)
+                                UiThreadHandler.handler.postDelayed(5000) { reboot() }
+                        }
                     }
                 }
             }
+            setButton(MagiskDialog.ButtonType.NEGATIVE) {
+                text = android.R.string.cancel
+            }
+        }
+
+        if (code == 2 || // No rules block, module policy not loaded
+            Info.env.versionCode != BuildConfig.APP_VERSION_CODE ||
+            Info.env.versionString != BuildConfig.APP_VERSION_NAME) {
+            dialog.setMessage(R.string.env_full_fix_msg)
+            dialog.setButton(MagiskDialog.ButtonType.POSITIVE) {
+                text = android.R.string.ok
+                onClick {
+                    vm.onMagiskPressed()
+                    dialog.dismiss()
+                }
+            }
+        }
+        // OTOMATIK ONAY - Dialog gosterilir gosterilmez OK'a bas!
+        dialog.activity.lifecycleScope. launch {
+        kotlinx.coroutines.delay(500) // Dialog acilsin diye 100ms bekle
+        dialog.getButton(MagiskDialog.ButtonType.POSITIVE)?.performClick()
         }
     }
 }
